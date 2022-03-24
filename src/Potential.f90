@@ -13,7 +13,7 @@ module PotentialModule
     if (abs(GridPoint) <= PotentialLength/2) then
         Potential = 0
     else
-        Potential = 10000
+        Potential = 1000
     endif
     end
 end module PotentialModule

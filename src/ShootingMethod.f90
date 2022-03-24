@@ -7,10 +7,10 @@ module ShootingMethod
 
     contains
 
-    subroutine Shooting(ApproxEigenvalue, BoundaryCond, Grid, Eigenfunctions)
+    function Shooting(ApproxEigenvalue, BoundaryCond, Grid) result(Eigenfunctions)
         real*8, intent(in) :: ApproxEigenvalue, Grid(:)
         real*8, intent(in) :: BoundaryCond(4)
-        real*8, allocatable, intent(out) :: Eigenfunctions(:)
+        real*8, allocatable :: Eigenfunctions(:)
         real*8, allocatable :: EigenfunctionsIn(:), EigenfunctionsOut(:)
         real*8 :: TrialEigenvalue, TempNewEigenvalue, EigenvalueCorrection
         real*8 :: Length, NeighbDistance
@@ -73,7 +73,7 @@ module ShootingMethod
             TrialEigenvalue+1./NeighbDistance**2.)*Eigenfunctions(i-1)
         enddo
         call Normalize(Eigenfunctions)
-    end subroutine
+    end
 
 
     subroutine AssignBoundary(BoundaryCond, Array)
