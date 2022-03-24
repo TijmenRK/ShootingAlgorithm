@@ -1,18 +1,18 @@
 ########################################################################
 ####################### Makefile Template ##############################
 ########################################################################
+
 # Compiler settings - Can be customized.
 CC = gfortran
 CPP = gfortran -cpp
 CXXFLAGS = -g -Wall
-LDFLAGS = 
+LDFLAGS = -llapack -lblas
 
 # Makefile settings - Can be customized.
 APPNAME = myapp
 EXT = .f90
 SRCDIR = src
 OBJDIR = obj
-
 
 ############## Do not change anything from here downwards! #############
 SRC = $(wildcard $(SRCDIR)/*$(EXT))

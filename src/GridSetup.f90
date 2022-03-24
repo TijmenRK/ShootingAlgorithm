@@ -8,12 +8,12 @@ module GridSetup
 
     function CreateGrid(GridPoints, LowerBound, UpperBound) result(Grid)
         integer, intent(in) :: GridPoints
-        real, intent(in) :: LowerBound, UpperBound
-        real, allocatable :: Grid(:)
-        real :: NeighbDistance
+        real*8, intent(in) :: LowerBound, UpperBound
+        real*8, allocatable :: Grid(:)
+        real*8 :: NeighbDistance
         integer :: i
 
-        NeighbDistance = (UpperBound-LowerBound)/real(GridPoints-1)
+        NeighbDistance = (UpperBound-LowerBound)/(GridPoints-1)
         
         allocate(Grid(GridPoints))
 
