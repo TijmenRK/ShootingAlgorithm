@@ -1,4 +1,5 @@
 module ShootingMethod
+    use input
     use PotentialModule
     implicit none
 
@@ -7,14 +8,13 @@ module ShootingMethod
 
     contains
 
-    subroutine Shooting(ApproxEigenvalue, BoundaryCond, Grid, Eigenfunctions)
+    function Shooting(ApproxEigenvalue, Grid) result(Eigenfunctions)
         real*8, intent(in) :: ApproxEigenvalue, Grid(:)
-        real*8, intent(in) :: BoundaryCond(4)
-        real*8, allocatable, intent(out) :: Eigenfunctions(:)
+        real*8, allocatable :: Eigenfunctions(:)
         real*8, allocatable :: EigenfunctionsIn(:), EigenfunctionsOut(:)
         real*8 :: TrialEigenvalue, TempNewEigenvalue, EigenvalueCorrection
-        real*8 :: Length, NeighbDistance
-        integer :: MatchingPoint, i, GridSize, MPIn
+        real*8 :: NeighbDistance
+        integer :: MatchingPoint, i, MPIn
         
         if (modulo(size(Grid),2) == 0) then
             MatchingPoint = size(Grid)/2
@@ -27,21 +27,19 @@ module ShootingMethod
         allocate(EigenfunctionsIn(MatchingPoint+2))
         allocate(EigenfunctionsOut(MatchingPoint+2))
 
-        GridSize = size(Grid)
-        Length = Grid(Gridsize) - Grid(1)
-        NeighbDistance = Length/GridSize
+        NeighbDistance = In_Length/In_GridPoints
 
-        call AssignBoundary(BoundaryCond, EigenfunctionsIn)
-        call AssignBoundary(BoundaryCond, EigenfunctionsOut)
+        call AssignBoundary(In_BoundaryCond, EigenfunctionsIn)
+        call AssignBoundary(In_BoundaryCond, EigenfunctionsOut)
 
         TrialEigenvalue = ApproxEigenvalue
         do
             do i=3, MatchingPoint+2
-                EigenfunctionsOut(i) = -EigenfunctionsOut(i-2) + 2.*NeighbDistance**2.*(Potential(Grid(i-1),Length)- &
+                EigenfunctionsOut(i) = -EigenfunctionsOut(i-2) + 2.*NeighbDistance**2.*(Potential(Grid(i-1))- &
                 TrialEigenvalue+1./NeighbDistance**2.)*EigenfunctionsOut(i-1)
 
                 EigenfunctionsIn(size(EigenfunctionsIn)-i+1) = -EigenfunctionsIn(size(EigenfunctionsIn)-i+3) + 2.* &
-                    NeighbDistance**2.*(Potential(Grid(GridSize-i+2),Length)-TrialEigenvalue+1./NeighbDistance**2.)* &
+                    NeighbDistance**2.*(Potential(Grid(In_GridPoints-i+2))-TrialEigenvalue+1./NeighbDistance**2.)* &
                     EigenfunctionsIn(size(EigenfunctionsIn)-i+2)
             enddo
 
@@ -49,8 +47,8 @@ module ShootingMethod
             call Normalize(EigenfunctionsOut)
 
             EigenvalueCorrection = 1./2.*( &
-                (Derivative(EigenfunctionsIn,NeighbDistance,MPIn)/EigenfunctionsIn(MPIn))- &
-                (Derivative(EigenfunctionsOut,NeighbDistance,MatchingPoint)/EigenfunctionsOut(MatchingPoint)))* &
+                (Derivative(EigenfunctionsIn,MPIn)/EigenfunctionsIn(MPIn))- &
+                (Derivative(EigenfunctionsOut,MatchingPoint)/EigenfunctionsOut(MatchingPoint)))* &
                 1/(sum(EigenfunctionsOut(1:MatchingPoint)**2)/EigenfunctionsOut(MatchingPoint)**2 &
                 + sum(EigenfunctionsIn(MPIn:size(EigenfunctionsIn))**2)/EigenfunctionsIn(MPIn)**2)
 
@@ -65,15 +63,15 @@ module ShootingMethod
         deallocate(EigenfunctionsIn)
         deallocate(EigenfunctionsOut)
 
-        allocate(Eigenfunctions(GridSize))
-        call AssignBoundary(BoundaryCond, Eigenfunctions)
+        allocate(Eigenfunctions(In_GridPoints))
+        call AssignBoundary(In_BoundaryCond, Eigenfunctions)
 
-        do i=3, GridSize
-            Eigenfunctions(i) = -Eigenfunctions(i-2) + 2.*NeighbDistance**2.*(Potential(Grid(i-1),Length)- &
+        do i=3, In_GridPoints
+            Eigenfunctions(i) = -Eigenfunctions(i-2) + 2.*NeighbDistance**2.*(Potential(Grid(i-1))- &
             TrialEigenvalue+1./NeighbDistance**2.)*Eigenfunctions(i-1)
         enddo
         call Normalize(Eigenfunctions)
-    end subroutine
+    end
 
 
     subroutine AssignBoundary(BoundaryCond, Array)
@@ -103,9 +101,11 @@ module ShootingMethod
         enddo
     end subroutine
 
-    real*8 function Derivative(Array, NeighbDistance, Index)
-        real*8, intent(in) :: Array(:), NeighbDistance
+    real*8 function Derivative(Array, Index)
+        real*8, intent(in) :: Array(:)
         integer, intent(in) :: Index
+        real*8 :: NeighbDistance
+        NeighbDistance = In_Length/In_GridPoints
         Derivative = (Array(Index+1)-Array(Index-1))/(2*NeighbDistance)
     end
 end module ShootingMethod

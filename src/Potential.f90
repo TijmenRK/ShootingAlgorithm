@@ -1,4 +1,5 @@
 module PotentialModule
+    use input
     implicit none
 
     public :: Potential
@@ -6,14 +7,14 @@ module PotentialModule
 
     contains
     
-    real function Potential(GridPoint, Length)
-    real*8, intent(in) :: GridPoint, Length
+    real*8 function Potential(GridPoint)
+    real*8, intent(in) :: GridPoint
     real*8 :: PotentialLength
-    PotentialLength = Length*0.9
+    PotentialLength = In_Length*In_PotentialLengthofTotal
     if (abs(GridPoint) <= PotentialLength/2) then
         Potential = 0
     else
-        Potential = 10000
+        Potential = In_PotentialConstOutofWell
     endif
     end
 end module PotentialModule
