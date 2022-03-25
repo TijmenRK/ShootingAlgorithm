@@ -11,7 +11,8 @@ module Initialization
 
     function Eigenvalue3Point(Grid) result(Eigenvalues)
         real*8, intent(in) :: Grid(:)
-        real*8, allocatable :: Matrix_S(:,:), Matrix_V(:,:), Matrix_L(:,:), Eigenvalues(:)
+        real*8, allocatable :: Matrix_S(:,:), Matrix_V(:,:), Matrix_L(:,:)
+        real*8 :: Eigenvalues(In_GridPoints)
         real*8 :: NeighbDistance
         integer :: i
 
@@ -21,10 +22,11 @@ module Initialization
         Matrix_S = 0.
         Matrix_V = 0.
         Matrix_L = 0.
-        allocate(Eigenvalues(In_GridPoints))
+        Eigenvalues = 0.
 
         NeighbDistance = In_Length/In_GridPoints
 
+        ! Fill in Matrix V and S
         do i=1, In_GridPoints
             Matrix_S(i,i) = -2.
             Matrix_V(i,i) = Potential(Grid(i))
@@ -36,8 +38,10 @@ module Initialization
             endif
         enddo
 
+        ! Combine V and S in Matrix L
         Matrix_L = - Matrix_S/(2*NeighbDistance**2) + Matrix_V
 
+        ! Call module diagonalization to calculate eigenvalues for this matrix
         call diagonalize(Matrix_L, eigenvalues=Eigenvalues)
     end
 end module Initialization

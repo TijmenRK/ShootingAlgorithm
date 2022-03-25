@@ -3,21 +3,23 @@ module ShootingMethod
     use PotentialModule
     implicit none
 
-    public :: Shooting
+    public :: ShootingAlgorithm
     private
 
     contains
 
-    function Shooting(ApproxEigenvalue, Grid) result(Eigenfunctions)
+    function ShootingAlgorithm(ApproxEigenvalue, Grid) result(Eigenfunctions)
         real*8, intent(in) :: ApproxEigenvalue, Grid(:)
-        real*8, allocatable :: Eigenfunctions(:)
+        real*8 :: Eigenfunctions(In_GridPoints)
         real*8, allocatable :: EigenfunctionsIn(:), EigenfunctionsOut(:)
         real*8 :: TrialEigenvalue, TempNewEigenvalue, EigenvalueCorrection
         real*8 :: NeighbDistance
         integer :: MatchingPoint, i, MPIn
         
+        ! MatchingPoint placed in the middle of the grid
         if (modulo(size(Grid),2) == 0) then
             MatchingPoint = size(Grid)/2
+            ! Position of MatchingPoint in the EigenfunctionsIn-array
             MPIn = 2
         else
             MatchingPoint = (size(Grid)+1)/2
@@ -29,11 +31,13 @@ module ShootingMethod
 
         NeighbDistance = In_Length/In_GridPoints
 
+        ! Boundary filled in from input module (once, because never overwritten)
         call AssignBoundary(In_BoundaryCond, EigenfunctionsIn)
         call AssignBoundary(In_BoundaryCond, EigenfunctionsOut)
 
         TrialEigenvalue = ApproxEigenvalue
         do
+            ! Calculate eigenfunctions from two sides with TrialEigenvalue
             do i=3, MatchingPoint+2
                 EigenfunctionsOut(i) = -EigenfunctionsOut(i-2) + 2.*NeighbDistance**2.*(Potential(Grid(i-1))- &
                 TrialEigenvalue+1./NeighbDistance**2.)*EigenfunctionsOut(i-1)
@@ -46,12 +50,14 @@ module ShootingMethod
             call Normalize(EigenfunctionsIn)
             call Normalize(EigenfunctionsOut)
 
+            ! Calculate a correction for the TrialEigenvalue
             EigenvalueCorrection = 1./2.*( &
                 (Derivative(EigenfunctionsIn,MPIn)/EigenfunctionsIn(MPIn))- &
                 (Derivative(EigenfunctionsOut,MatchingPoint)/EigenfunctionsOut(MatchingPoint)))* &
                 1/(sum(EigenfunctionsOut(1:MatchingPoint)**2)/EigenfunctionsOut(MatchingPoint)**2 &
                 + sum(EigenfunctionsIn(MPIn:size(EigenfunctionsIn))**2)/EigenfunctionsIn(MPIn)**2)
 
+            ! Exit loop if correction is small enough, else try again with corrected eigenvalue
             TempNewEigenvalue = TrialEigenvalue - EigenvalueCorrection
             if (abs(TrialEigenvalue - TempNewEigenvalue) < 1E-13) then
                 exit
@@ -63,9 +69,8 @@ module ShootingMethod
         deallocate(EigenfunctionsIn)
         deallocate(EigenfunctionsOut)
 
-        allocate(Eigenfunctions(In_GridPoints))
+        ! Start shooting algorithm from left to right (similar to EigenfunctionsOut) with final eigenvalue
         call AssignBoundary(In_BoundaryCond, Eigenfunctions)
-
         do i=3, In_GridPoints
             Eigenfunctions(i) = -Eigenfunctions(i-2) + 2.*NeighbDistance**2.*(Potential(Grid(i-1))- &
             TrialEigenvalue+1./NeighbDistance**2.)*Eigenfunctions(i-1)
