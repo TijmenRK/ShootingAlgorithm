@@ -31,7 +31,7 @@ program main
 
     ! Print matrix EigenFunctions in output file
     open(newunit=iu,file=In_FileName,action="write",status="replace")
-    write (iu, '(i3,x,a,t30,a,f8.1)') In_AmountofStates, 'Trialeigenvalues', 'Potential out of well:', In_PotentialConstOutofWell
+    write (iu, '(i3,x,a,t30,a,es8.1)') In_AmountofStates, 'Trialeigenvalues'
     write (iu, *) '                         ', eigenvalues(1:In_AmountofStates)
     write (iu, *) ''
     do i=1, In_GridPoints
