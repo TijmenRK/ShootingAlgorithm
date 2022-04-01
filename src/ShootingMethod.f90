@@ -14,7 +14,7 @@ module ShootingMethod
         real*8, allocatable :: EigenfunctionsIn(:), EigenfunctionsOut(:)
         real*8 :: TrialEigenvalue, TempNewEigenvalue, EigenvalueCorrection
         real*8 :: NeighbDistance
-        integer :: MatchingPoint, i, MPIn, j=1
+        integer :: MatchingPoint, i, MPIn
         
         ! MatchingPoint placed in the middle of the grid
         if (modulo(size(Grid),2) == 0) then
@@ -64,7 +64,6 @@ module ShootingMethod
             else
                 TrialEigenvalue = TempNewEigenvalue
             endif
-            j = j + 1
         enddo
 
         deallocate(EigenfunctionsIn)
